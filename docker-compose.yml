@@ -11,8 +11,26 @@ services:
       - SERVICE_PORT=8082
       - JAEGER_HOST=jaeger
       - JAEGER_LOG_SPAN_ENABLED=true
+      - DB_URL=jdbc:postgresql://client-db:5432/postgres
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
     depends_on:
       - jaeger
+      - client-db
+    networks:
+      - microservices-network
+
+  client-db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "15432:5432"
+    volumes:
+      - client_postgres_data:/var/lib/postgresql/data
     networks:
       - microservices-network
 
@@ -23,14 +41,32 @@ services:
       - "8082:8082"
     depends_on:
       - jaeger
+      - server-db
     environment:
       - JAEGER_HOST=jaeger
       - JAEGER_LOG_SPAN_ENABLED=true
+      - DB_URL=jdbc:postgresql://server-db:5432/postgres
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+    networks:
+      - microservices-network
+
+  server-db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "25432:5432"
+    volumes:
+      - server_postgres_data:/var/lib/postgresql/data
     networks:
       - microservices-network
 
   jaeger:
-    image: jaegertracing/all-in-one:1.6.0
+    image: jaegertracing/all-in-one:1.41.0
     ports:
       - "5775:5775/udp"
       - "5778:5778"
@@ -47,3 +83,7 @@ services:
 networks:
   microservices-network:
     driver: bridge
+
+volumes:
+  client_postgres_data:
+  server_postgres_data:
