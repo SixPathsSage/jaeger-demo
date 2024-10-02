@@ -1,3 +1,4 @@
 /.idea/
 /jaeger-client/target/
 /jaeger-server/target/
+/keycloak/certs/

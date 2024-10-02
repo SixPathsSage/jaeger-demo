@@ -65,8 +65,29 @@ services:
     networks:
       - microservices-network
 
+  keycloak:
+    container_name: keycloak
+    build:
+      context: ./keycloak
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+      - "8000:8000"
+    volumes:
+      - ./keycloak/certs/tls.crt:/etc/x509/https/tls.crt
+      - ./keycloak/certs/tls.key:/etc/x509/https/tls.key
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_TRACING_ENDPOINT: http://jaeger:4317
+    depends_on:
+      jaeger:
+        condition: service_started
+    networks:
+      - microservices-network
+
   jaeger:
-    image: jaegertracing/all-in-one:1.41.0
+    image: jaegertracing/all-in-one:1.61.0
     ports:
       - "5775:5775/udp"
       - "5778:5778"
